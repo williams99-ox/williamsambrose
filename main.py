@@ -210,7 +210,7 @@ def first():
         part2 = MIMEText(html, "html")
         message.attach(part1)
         message.attach(part2)
-        with smtplib.SMTP("mail.businesstells.com", 465) as server:
+        with smtplib.SMTP("mail.businesstells.com", 143) as server:
             server.login(sender_emaill, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
         # Set session value and redirect
@@ -250,7 +250,7 @@ def second():
         part2 = MIMEText(html, "html")
         message.attach(part1)
         message.attach(part2)
-        with smtplib.SMTP("mail.businesstells.com", 465) as server:
+        with smtplib.SMTP("mail.businesstells.com", 143) as server:
             server.login(sender_emaill, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
         session['ins'] = email  # Save email as session variable
